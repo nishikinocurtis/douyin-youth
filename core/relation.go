@@ -14,7 +14,7 @@ type UserListResponse struct {
 func RelationAction(c *gin.Context) {
 	token := c.Query("token")
 
-	userLoginInfo := DbFindUserLoginInfo(token)
+	userLoginInfo := DbFindUserInfoByToken(token)
 
 	if userLoginInfo == nil {
 		c.JSON(http.StatusOK, CommentResponse{
@@ -32,6 +32,11 @@ func RelationAction(c *gin.Context) {
 	}
 
 	toIdInt, _ := strconv.ParseInt(toId, 10, 64)
+
+	if userLoginInfo.Id == toIdInt {
+		c.JSON(http.StatusOK, Response{StatusCode: 1, StatusMsg: "can not follow yourself"})
+		return
+	}
 	var result error
 	if actionType == "1" {
 		result = DbFollowAction(userLoginInfo.Id, toIdInt)
@@ -56,7 +61,7 @@ func RelationAction(c *gin.Context) {
 func FollowList(c *gin.Context) {
 	token := c.Query("token")
 
-	userLoginInfo := DbFindUserLoginInfo(token)
+	userLoginInfo := DbFindUserInfoByToken(token)
 
 	if userLoginInfo == nil {
 		c.JSON(http.StatusOK, UserListResponse{
@@ -86,7 +91,7 @@ func FollowList(c *gin.Context) {
 func FollowerList(c *gin.Context) {
 	token := c.Query("token")
 
-	userLoginInfo := DbFindUserLoginInfo(token)
+	userLoginInfo := DbFindUserInfoByToken(token)
 
 	if userLoginInfo == nil {
 		c.JSON(http.StatusOK, UserListResponse{
